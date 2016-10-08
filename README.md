@@ -54,14 +54,13 @@ number that won't upset your users. 250ms is reasonable, but up to one
 second might even be tolerable in high security scenarios.
 
 ```ts
-// TypeScript / ES6
-import { Argon2TheMax } from "argon2themax";
-import * from "argon2";
+// TypeScript / ES7
+import * as argon2 from "argon2themax";
 
 // Grab the options we want to use.
-// These options should take close to, but not more than, 250ms to compute a hash!
-// You'll want to store them, because finding them is expensive.
-const options = await Argon2TheMax.getMaxOptions(250);
+// These default options will take close to, but not more than, 250ms to compute a hash.
+// You'll want to store them, because finding them is expensive (~15s on my laptop).
+const options = await argon2.getMaxOptions();
 
 // Each password should have a secure, unique, hash. The argon2 module provides that.
 const salt = await argon2.generateSalt();
@@ -79,14 +78,13 @@ console.log(match);
 ```
 
 ```js
-// JavaScript / ES5
-var Argon2TheMax = require("argon2themax").Argon2TheMax;
-var argon2 = require("argon2");
+// JavaScript / ES5 / ES6
+var argon2 = require("argon2themax");
 
 // Grab the options we want to use.
-// These options should take close to, but not more than, 250ms to compute a hash!
-// You'll want to store them, because finding them is expensive.
-Argon2TheMax.getMaxOptions(250)
+// These options will take close to, but not more than, 250ms to compute a hash!
+// You'll want to store them, because finding them is expensive (~15s on my laptop).
+argon2.getMaxOptions()
     .then(function(options) {
 
         // Each password should have a secure, unique, hash. The argon2 module provides that.
@@ -116,8 +114,9 @@ the getMaxOptions and persist that for future usages in your production environm
 maybe with a config module or something of the sort.
 
 You can also retrieve the entire list of timings that were recorded as well as 
-implement custom selectors to choose a timing, and adjust the salt and plain password
-used for testing. There aren't examples for that yet, though the interfaces are exposed.
+implement custom timing and selector strategies to choose a timing, and adjust 
+the salt and plain password used for testing. There aren't examples for that yet,
+though the interfaces are exposed.
 
 ## Future
 Let me know over on the (issues)[https://github.com/jdconley/argon2themax/issues] if you have any issues!
