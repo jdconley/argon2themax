@@ -1,6 +1,7 @@
 # argon2themax
 An easy to use Node.JS library with one goal:
-Find the most costly Argon2 option set for secure password hashing.
+Increase password security by hashing passwords with the most costly Argon2 
+hash possible.
 
 [Argon2](https://github.com/P-H-C/phc-winner-argon2) is designed to
 hash in parallel on high CPU count x86 systems utilizing 4GB of memory
@@ -25,7 +26,7 @@ experience. We owe it to our users.
 
 Do you run massively parallel, high memory systems dedicated to hashing
 passwords? No? Attackers that crack passwords sure do. You might as well
-protect your users' passwords as well as you can.
+protect your passwords as well as you can.
 
 ## Installation
 Argon2TheMax depends on the [argon2](https://github.com/ranisalt/node-argon2) Node module, which

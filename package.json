@@ -1,7 +1,7 @@
 {
   "name": "argon2themax",
   "version": "1.0.0",
-  "description": "Find the most costly Argon2 option set for secure password hashing",
+  "description": "Hash passwords with the most costly Argon2 hash possible",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jdconley/argon2themax.git"
