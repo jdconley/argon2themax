@@ -153,7 +153,7 @@ export abstract class LinearSelectionStrategy implements SelectionStrategy {
 
     select(maxTimeMs: number): Timing {
         const timing = this.timingsCache[maxTimeMs] ||
-            _.find(this.sortedTimings, timing => {
+            _.findLast(this.sortedTimings, timing => {
                 return timing.computeTimeMs <= maxTimeMs;
             });
 
