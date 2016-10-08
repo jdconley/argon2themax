@@ -27,6 +27,7 @@ export interface TimingStrategy {
 
 export interface TimingContext {
     strategy: TimingStrategy;
+    accumulatedTimeMs: number;
     timingOptions: TimingOptions;
     startingOptions: argon2.Options;
     data: any;
@@ -38,6 +39,7 @@ export abstract class TimingStrategyBase implements TimingStrategy {
         opts.argon2d = options.argon2d;
 
         const context: TimingContext = {
+            accumulatedTimeMs: 0,
             data: {},
             startingOptions: opts,
             strategy: this,
@@ -47,6 +49,11 @@ export abstract class TimingStrategyBase implements TimingStrategy {
         this.onBeforeStart(context);
 
         const salt = await this.generateSalt(context);
+
+        // Warm up so testing is a tad more accurate
+        for (let i = 0; i < 3; i++) {
+            await argon2.hash(options.plain, salt, opts);
+        }
 
         const result: TimingResult = {
             timings: []
@@ -59,8 +66,11 @@ export abstract class TimingStrategyBase implements TimingStrategy {
             await argon2.hash(options.plain, salt, opts);
             const elapsedHrtime = process.hrtime(startHrtime);
 
+            const msElapsed = elapsedHrtime[0] * 1e3 + elapsedHrtime[1] / 1e6;
+            context.accumulatedTimeMs += msElapsed;
+
             lastTiming = {
-                computeTimeMs: elapsedHrtime[0] * 1e3 + elapsedHrtime[1] / 1e6,
+                computeTimeMs: msElapsed,
                 options: _.clone(opts)
             };
 
@@ -72,7 +82,7 @@ export abstract class TimingStrategyBase implements TimingStrategy {
             }
 
             // Allow the implementation to stop the test run when updating options
-            if (!this.applyNextOptions(context, opts)) {
+            if (!this.applyNextOptions(context, lastTiming, opts)) {
                 break;
             }
 
@@ -82,7 +92,7 @@ export abstract class TimingStrategyBase implements TimingStrategy {
     }
 
     abstract onBeforeStart(context: TimingContext): void;
-    abstract applyNextOptions(context: TimingContext, options: argon2.Options): boolean;
+    abstract applyNextOptions(context: TimingContext, lastTiming: Timing, options: argon2.Options): boolean;
 
     isDone(context: TimingContext, lastTiming: Timing): boolean {
         return lastTiming.computeTimeMs >= context.timingOptions.maxTimeMs;
@@ -99,13 +109,12 @@ class MaxMemoryMarchStrategy extends TimingStrategyBase {
             context.data.parallelism = Math.max(
                 Math.min(os.cpus().length * 2, argon2.limits.parallelism.max),
                 argon2.limits.parallelism.min);
-
         context.data.memoryCostMax = Math.min(
             Math.floor(Math.log2(os.freemem() / 1024)),
             argon2.limits.memoryCost.max);
     }
 
-    applyNextOptions(context: TimingContext, options: argon2.Options): boolean {
+    applyNextOptions(context: TimingContext, lastTiming: Timing, options: argon2.Options): boolean {
         // Prefer adding more memory, then add more time
         if (options.memoryCost < context.data.memoryCostMax) {
             options.memoryCost++;
