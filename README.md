@@ -58,6 +58,7 @@ second might even be tolerable in high security scenarios.
 ```ts
 // TypeScript / ES7
 import * as argon2 from "argon2themax";
+const plain = "password";
 
 // Grab the options we want to use.
 // These default options will take close to, but not more than, 250ms to compute a hash.
@@ -69,13 +70,13 @@ const salt = await argon2.generateSalt();
 
 // Hashing happens in an asynchronous event using libuv so your system can
 // still process other IO items in the Node.JS queue, such as web requests.
-const hash = await argon2.hash("password", salt, options);
+const hash = await argon2.hash(plain, salt, options);
 
 // This hash is what you should store in your database. Treat it as an opaque string.
 console.log(hash);
 
 // Verifying the hash against your users' password is simple.
-const match = await argon2.verify("password", hash);
+const match = await argon2.verify(plain, hash);
 console.log(match);
 ```
 
@@ -86,26 +87,34 @@ var argon2 = require("argon2themax");
 // Grab the options we want to use.
 // These options will take close to, but not more than, 250ms to compute a hash!
 // You'll want to store them, because finding them is expensive (~15s on my laptop).
+var maxOpts;
+var plain = "password";
+
 argon2.getMaxOptions()
     .then(function(options) {
+        maxOpts = options;
 
         // Each password should have a secure, unique, hash. The argon2 module provides that.
-        argon2.generateSalt().then(function(salt) {
+        return argon2.generateSalt();
 
-            // Hashing happens in an asynchronous event using libuv so your system can
-            // still process other IO items in the Node.JS queue, such as web requests.
-            argon2.hash("password", salt, options).then(function(hash) {
+    }).then(function(salt) {
 
-                // This hash is what you should store in your database. Treat it as an opaque string.
-                console.log(hash);
+        // Hashing happens in an asynchronous event using libuv so your system can
+        // still process other IO items in the Node.JS queue, such as web requests.
+        return argon2.hash(plain, salt, maxOpts);
 
+    }).then(function(hash) {
 
-                // Verifying the hash is simple.
-                argon2.verify("password", hash).then(function(match) {
-                    console.log(match);
-                });
-            });
-        });
+        // This hash is what you should store in your database. Treat it as an opaque string.
+        console.log(hash);
+
+        // Verifying the hash is simple.
+        return argon2.verify(plain, hash);
+
+    }).then(function(match) {
+        
+        // Does this password match the hash?
+        return match;
     });
 ```
 
