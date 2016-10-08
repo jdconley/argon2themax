@@ -62,10 +62,12 @@ const plain = "password";
 
 // Grab the options we want to use.
 // These default options will take close to, but not more than, 250ms to compute a hash.
-// You'll want to store them, because finding them is expensive (~15s on my laptop).
+// The first run of getMaxOptions() takes a while (~15s on my laptop) so you should 
+// call it at startup, not when the first password hash request comes in.
+// Subsequent calls use a cache.
 const options = await argon2.getMaxOptions();
 
-// Each password should have a secure, unique, hash. The argon2 module provides that.
+// Each password should have a secure, unique, salt. The argon2 module provides that.
 const salt = await argon2.generateSalt();
 
 // Hashing happens in an asynchronous event using libuv so your system can
@@ -85,8 +87,10 @@ console.log(match);
 var argon2 = require("argon2themax");
 
 // Grab the options we want to use.
-// These options will take close to, but not more than, 250ms to compute a hash!
-// You'll want to store them, because finding them is expensive (~15s on my laptop).
+// These options will take close to, but not more than, 250ms to compute a hash.
+// The first run of getMaxOptions() takes a while (~15s on my laptop) so you should 
+// call it at startup, not when the first password hash request comes in.
+// Subsequent calls use a cache.
 var maxOpts;
 var plain = "password";
 
@@ -94,7 +98,7 @@ argon2.getMaxOptions()
     .then(function(options) {
         maxOpts = options;
 
-        // Each password should have a secure, unique, hash. The argon2 module provides that.
+        // Each password should have a secure, unique, salt. The argon2 module provides that.
         return argon2.generateSalt();
 
     }).then(function(salt) {
@@ -136,8 +140,8 @@ var argon2 = require("argon2themax");
 ## Advanced Usage
 You may not want to recompute the most expensive hash on every server startup.
 If you have a roughly homogenous server farm, or only one server, you should run
-the getMaxOptions and persist that for future usages in your production environment,
-maybe with a config module or something of the sort.
+the getMaxOptions and persist the resulting JSON for future usages in your 
+production environment, maybe with a config module or something of the sort.
 
 You can also retrieve the entire list of timings that were recorded as well as 
 implement custom timing and selector strategies to choose a timing, and adjust 
