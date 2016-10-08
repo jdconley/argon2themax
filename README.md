@@ -33,6 +33,8 @@ requires node-gyp to be installed globally. It also requires a modern
 C++ compiler. Please see the [argon2 ReadMe](https://github.com/ranisalt/node-argon2)
 for more information if you have trouble running `npm install`.
 
+We require Node.JS v4.0.0+.
+
 ```sh
 npm install -g node-gyp
 
@@ -105,6 +107,21 @@ argon2.getMaxOptions()
             });
         });
     });
+```
+
+## Using Instead of Argon2 Module
+For ease of use Argon2TheMax includes a proxy to the [argon2](https://github.com/ranisalt/node-argon2)
+module since we use it internally. If you already use the excellent Argon2 module
+you can remove your dependency on that module and just use Argon2TheMax.
+
+Simply change your imports and everything should be good to go:
+
+```js
+// Change this:
+var argon2 = require("argon2");
+
+// To this:
+var argon2 = require("argon2themax");
 ```
 
 ## Advanced Usage
