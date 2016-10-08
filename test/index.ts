@@ -1,19 +1,23 @@
 import * as mocha from "mocha";
 import * as chai from "chai";
-import { Argon2TheMax, SelectionStrategyType } from "../src/index";
-import * as argon2 from "argon2";
+import * as argon2 from "../src/index";
 
 describe("Argon2TheMax", () => {
     it("can turn it to 11 hundred", async function (): Promise<any> {
         this.timeout(0);
 
-        const result = await Argon2TheMax.generateTimings({ maxTimeMs: 1100 });
+        const result = await argon2.Measurement.generateTimings(
+            { maxTimeMs: 1100 },
+            argon2.Measurement.getTimingStrategy(argon2.Measurement.TimingStrategyType.MaxMemoryMarch));
+
         console.log(`Found ${result.timings.length} timings.`);
 
-        const selector = Argon2TheMax.getSelectionStrategy(SelectionStrategyType.ClosestMatch);
+        const selector = argon2.Selection.getSelectionStrategy(
+            argon2.Selection.SelectionStrategyType.ClosestMatch);
         selector.initialize(result);
 
-        const selector2 = Argon2TheMax.getSelectionStrategy(SelectionStrategyType.MaxMemory);
+        const selector2 = argon2.Selection.getSelectionStrategy(
+            argon2.Selection.SelectionStrategyType.MaxCost);
         selector2.initialize(result);
 
         chai.assert.isNotNull(selector.select(11000));
@@ -46,9 +50,11 @@ describe("Argon2TheMax", () => {
     it("has a simple interface", async function (): Promise<any> {
         this.timeout(0);
 
-        const options = await Argon2TheMax.getMaxOptions(100);
+        const options = await argon2.getMaxOptions();
         chai.assert.isNotNull(options);
-        const salt = await argon2.generateSalt(32);
+        console.log(options);
+
+        const salt = await argon2.generateSalt();
 
         chai.assert.isNotNull(await argon2.hash("password", salt, options));
     });
