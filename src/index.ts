@@ -210,7 +210,7 @@ export namespace Measurement {
             plain: "this is a super cool password",
             saltLength: 16,
             statusCallback: t => {
-                console.log(`Took ${t.computeTimeMs}ms.
+                console.log(`Hashing took ${t.computeTimeMs}ms.
                     Parallelism: ${t.options.parallelism}.
                     MemoryCost: ${t.options.memoryCost} (${Math.pow(2, t.options.memoryCost) / 1024}MB).
                     TimeCost: ${t.options.timeCost}.`);
@@ -325,11 +325,24 @@ import TimingStrategy = Measurement.TimingStrategy;
 import SelectionStrategyType = Selection.SelectionStrategyType;
 import SelectionStrategy = Selection.SelectionStrategy;
 
+const optionsCache: { [key: string]: argon2.Options; } = { };
+function optionsCacheKey(maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
+        timingStrategy: TimingStrategyType = TimingStrategyType.ClosestMatch,
+        selectionStrategy: SelectionStrategyType = SelectionStrategyType.MaxCost): string {
+            return `${maxMs}:${timingStrategy}:${selectionStrategy}`;
+}
+
 export async function getMaxOptions(
         maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
         timingStrategy: TimingStrategyType = TimingStrategyType.ClosestMatch,
         selectionStrategy: SelectionStrategyType = SelectionStrategyType.MaxCost
     ): Promise<argon2.Options> {
+
+    const cacheKey = optionsCacheKey(maxMs, timingStrategy, selectionStrategy);
+    let options = optionsCache[cacheKey];
+    if (options) {
+        return options;
+    }
 
     const tStrategy: TimingStrategy = Measurement.getTimingStrategy(timingStrategy);
     const timings = await Measurement.generateTimings({ maxTimeMs: maxMs }, tStrategy);
@@ -338,7 +351,9 @@ export async function getMaxOptions(
     sStrategy.initialize(timings);
 
     const selectedTiming = sStrategy.select(maxMs);
-    return selectedTiming.options;
+    optionsCache[cacheKey] = options = selectedTiming.options;
+
+    return options;
 }
 
 export const defaults = argon2.defaults;
