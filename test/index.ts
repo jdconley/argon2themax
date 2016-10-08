@@ -4,13 +4,12 @@ import { Argon2TheMax, SelectionStrategyType } from "../src/index";
 import * as argon2 from "argon2";
 
 describe("Argon2TheMax", () => {
-    it("can turn it to 11", async function (): Promise<any> {
+    it("can turn it to 11 hundred", async function (): Promise<any> {
         this.timeout(0);
 
         const result = await Argon2TheMax.generateTimings({ maxTimeMs: 1100 });
         console.log(`Found ${result.timings.length} timings.`);
 
-        // The results of this is pretty tough to validate as it will vary
         const selector = Argon2TheMax.getSelectionStrategy(SelectionStrategyType.ClosestMatch);
         selector.initialize(result);
 
@@ -24,13 +23,17 @@ describe("Argon2TheMax", () => {
         chai.assert.isNotNull(selector.select(100));
         chai.assert.isNotNull(selector.select(100));
 
+        chai.assert.throw(() => selector.select(0), "No timings found with less than 0ms compute time.");
+
         const fastest = selector.fastest();
         chai.assert.isNotNull(fastest);
+        console.log(`Fastest: ${JSON.stringify(fastest)}`);
 
         const slowest = selector.slowest();
         chai.assert.isNotNull(slowest);
+        console.log(`Slowest: ${JSON.stringify(slowest)}`);
 
-        chai.assert.notEqual(fastest, slowest, "The fastest and slowest options should be different");
+        chai.assert.notDeepEqual(fastest, slowest, "The fastest and slowest options should be different, or something is very wrong.");
 
         const salt = await argon2.generateSalt(32);
         let fastestHash: string, slowestHash: string;
