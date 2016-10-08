@@ -1,0 +1,48 @@
+{
+  "name": "argon2themax",
+  "version": "1.0.0",
+  "description": "Find the most costly Argon2 option set for secure password hashing",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdconley/argon2themax.git"
+  },
+  "scripts": {
+    "prepublish": "rm -rf dist && tslint --project tslint.json && tsc -d && tsc -p .",
+    "pretest": "tslint --project tslint.json && tsc -p .",
+    "test": "mocha dist/test/*.js"
+  },
+  "main": "dist/src/index.js",
+  "typings": "dist/src/index.d.ts",
+  "keywords": [
+    "password",
+    "hash",
+    "hashing",
+    "argon2",
+    "security"
+  ],
+  "author": {
+    "name": "JD Conley",
+    "email": "jd.conley@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/jdconley/argon2themax/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node" : "^4.0.0"
+  },
+  "dependencies": {
+    "argon2": "^0.14.0",
+    "lodash": "^4.16.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/lodash": "^4.14.37",
+    "@types/mocha": "^2.2.32",
+    "@types/node": "^6.0.41",
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2",
+    "tslint": "^3.15.1",
+    "typescript": "^2.0.3"
+  }
+}

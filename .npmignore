@@ -1,0 +1,8 @@
+.vscode
+src
+test
+dist/**/*.map
+dist/test
+tsconfig.json
+tslint.json
+*.tgz
