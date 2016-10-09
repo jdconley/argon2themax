@@ -26,6 +26,7 @@ export namespace Measurement {
 
     export interface TimingStrategy {
         run(options: TimingOptions): Promise<TimingResult>;
+        name: string;
     }
 
     export interface TimingContext {
@@ -38,6 +39,8 @@ export namespace Measurement {
     }
 
     export abstract class TimingStrategyBase implements TimingStrategy {
+        name: string;
+
         async run(options: TimingOptions): Promise<TimingResult> {
             let opts = _.clone(argon2.defaults);
             opts.argon2d = options.argon2d;
@@ -110,6 +113,8 @@ export namespace Measurement {
     }
 
     export class MaxMemoryMarchStrategy extends TimingStrategyBase {
+        name: string = "maxmemory";
+
         onBeforeStart(context: TimingContext): void {
             context.startingOptions.parallelism =
                 context.data.parallelism = Math.max(
@@ -137,6 +142,8 @@ export namespace Measurement {
     }
 
     export class ClosestMatchStrategy extends TimingStrategyBase {
+        name: string = "closestmatch";
+
         onBeforeStart(context: TimingContext): void {
             context.startingOptions.parallelism =
                 context.data.parallelism = Math.max(
@@ -239,9 +246,12 @@ export namespace Selection {
         select(maxTimeMs: number): Timing;
         fastest(): Timing;
         slowest(): Timing;
+        name: string;
     }
 
     export abstract class LinearSelectionStrategy implements SelectionStrategy {
+        name: string;
+
         private sortedTimings: Timing[];
         private timingsCache: { [ms: number]: Timing; } = { };
         private fastestTiming: Timing;
@@ -290,6 +300,8 @@ export namespace Selection {
     }
 
     export class MaxCostSelectionStrategy extends LinearSelectionStrategy {
+        name: string = "maxcost";
+
         getSortedTimings(timings: Timing[]): Timing[] {
             return _.orderBy(timings,
                 ["options.memoryCost", "options.timeCost", "options.parallelism", "computeTimeMs"],
@@ -298,6 +310,8 @@ export namespace Selection {
     }
 
     export class ClosestMatchSelectionStrategy extends LinearSelectionStrategy {
+        name: string = "closestmatch";
+
         getSortedTimings(timings: Timing[]): Timing[] {
             return _.sortBy(timings, "computeTimeMs");
         }
@@ -327,9 +341,30 @@ import SelectionStrategy = Selection.SelectionStrategy;
 
 const optionsCache: { [key: string]: argon2.Options; } = { };
 function optionsCacheKey(maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
-        timingStrategy: TimingStrategyType = TimingStrategyType.ClosestMatch,
-        selectionStrategy: SelectionStrategyType = SelectionStrategyType.MaxCost): string {
+        timingStrategy: string,
+        selectionStrategy: string): string {
             return `${maxMs}:${timingStrategy}:${selectionStrategy}`;
+}
+
+export async function getMaxOptionsWithStrategies(
+        maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
+        timingStrategy: Measurement.TimingStrategy,
+        selectionStrategy: SelectionStrategy
+    ): Promise<argon2.Options> {
+
+    const cacheKey = optionsCacheKey(maxMs, timingStrategy.name, selectionStrategy.name);
+    let options = optionsCache[cacheKey];
+    if (options) {
+        return options;
+    }
+
+    const timings = await Measurement.generateTimings({ maxTimeMs: maxMs }, timingStrategy);
+    selectionStrategy.initialize(timings);
+
+    const selectedTiming = selectionStrategy.select(maxMs);
+    optionsCache[cacheKey] = options = selectedTiming.options;
+
+    return options;
 }
 
 export async function getMaxOptions(
@@ -338,22 +373,11 @@ export async function getMaxOptions(
         selectionStrategy: SelectionStrategyType = SelectionStrategyType.MaxCost
     ): Promise<argon2.Options> {
 
-    const cacheKey = optionsCacheKey(maxMs, timingStrategy, selectionStrategy);
-    let options = optionsCache[cacheKey];
-    if (options) {
-        return options;
-    }
-
-    const tStrategy: TimingStrategy = Measurement.getTimingStrategy(timingStrategy);
-    const timings = await Measurement.generateTimings({ maxTimeMs: maxMs }, tStrategy);
-
-    const sStrategy: SelectionStrategy = Selection.getSelectionStrategy(selectionStrategy);
-    sStrategy.initialize(timings);
-
-    const selectedTiming = sStrategy.select(maxMs);
-    optionsCache[cacheKey] = options = selectedTiming.options;
-
-    return options;
+    return getMaxOptionsWithStrategies(
+        maxMs,
+        Measurement.getTimingStrategy(timingStrategy),
+        Selection.getSelectionStrategy(selectionStrategy)
+    );
 }
 
 export const defaults = argon2.defaults;
