@@ -7,7 +7,7 @@ node_js:
 sudo: required
 dist: trusty
 env:
-    - CXX=g++-6
+    - CXX=g++
 before_install:
     - "npm install -g node-gyp"
 addons:
