@@ -206,7 +206,7 @@ export namespace Measurement {
     export const defaultTimingStrategy: Measurement.TimingStrategy = new Measurement.ClosestMatchStrategy();
     export const defaultTimingOptions: Measurement.TimingOptions = {
             argon2d: false,
-            maxTimeMs: 250,
+            maxTimeMs: 100,
             plain: "this is a super cool password",
             saltLength: 16,
             statusCallback: t => {
