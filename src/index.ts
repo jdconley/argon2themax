@@ -27,11 +27,22 @@ export interface OptionLimits {
 }
 
 const argon2lib: any = require("argon2");
-export const defaults = argon2lib.defaults;
-export const limits = argon2lib.limits;
-export const hash = argon2lib.hash;
-export const generateSalt = argon2lib.generateSalt;
-export const verify = argon2lib.verify;
+export const defaults: Options = argon2lib.defaults;
+export const limits: OptionLimits = argon2lib.limits;
+
+export const hash:
+    (plain: Buffer | string, salt: Buffer, options?: Options) => Promise<string>
+    = argon2lib.hash;
+
+export const generateSalt:
+    (length?: number) => Promise<Buffer>
+    = argon2lib.generateSalt;
+
+export const verify:
+    (hash: string, plain: Buffer | string) => Promise<boolean>
+    = argon2lib.verify;
+
+
 // End Argon2 cloned interface for ease of use
 
 export namespace Measurement {
