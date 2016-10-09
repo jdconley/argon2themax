@@ -30,7 +30,7 @@ passwords? No? Attackers that crack passwords sure do. You might as well
 protect your passwords as well as you can.
 
 ## Installation
-Argon2TheMax depends on the [argon2](https://github.com/ranisalt/node-argon2) Node module, which
+argon2themax depends on the [argon2](https://github.com/ranisalt/node-argon2) Node module, which
 requires node-gyp to be installed globally. It also requires a modern
 C++ compiler. Please see the [argon2 ReadMe](https://github.com/ranisalt/node-argon2)
 for more information if you have trouble running `npm install`.
@@ -44,7 +44,7 @@ npm install --save argon2themax
 ```
 
 ## Typical Usage
-You should use Argon2TheMax on your service instances that are responsible for hashing
+You should use argon2themax on your service instances that are responsible for hashing
 passwords. To get the most accurate measurements, you should run the `getMaxOptions()` 
 function for the first time while your system is idle. It is very CPU and memory 
 intensive and may temporarily use up to 4GB RAM if it is available.
@@ -125,9 +125,9 @@ argon2.getMaxOptions()
 ```
 
 ## Using Instead of Argon2 Module
-For ease of use Argon2TheMax includes a proxy to the excellent 
+For ease of use argon2themax includes a proxy to the excellent 
 [argon2](https://github.com/ranisalt/node-argon2) module. If you already use the
-Argon2 module you can remove your dependency on that module and just use Argon2TheMax.
+Argon2 module you can remove your dependency on that module and just use argon2themax.
 
 Simply change your imports and everything should be good to go:
 
