@@ -51,11 +51,11 @@ intensive and may temporarily use up to 4GB RAM if it is available.
 
 Calculating the optimal hash options will take a while, as argon2themax tries various 
 Argon2 options and spits back an Option object that will let you hash passwords
-in using close to your specified max clock time, without going over. This allows you to 
+using close to your specified max clock time, without going over. This allows you to 
 decide how much time you want to devote to hashing and verifying passwords. 
 Choose the biggest number that won't upset your users. 100ms (the default) is reasonable, 
-and much more secure than the default options on most systems, but up to one second
-might even be tolerable in high security scenarios.
+and much more secure than the default options for Argon2 on most systems, but up to one 
+second might even be tolerable in high security scenarios.
 
 ```ts
 // TypeScript / ES7
@@ -79,13 +79,13 @@ const hash = await argon2.hash(plain, salt, options);
 // This hash is what you should store in your database. Treat it as an opaque string.
 console.log(hash);
 
-// Verifying the hash against your users' password is simple.
+// Verifying the hash against your user's password is simple.
 const match = await argon2.verify(plain, hash);
 console.log(match);
 ```
 
 ```js
-// JavaScript / ES5 / ES6
+// JavaScript / ES5 / Promises instead of "await"
 var argon2 = require("argon2themax");
 
 // Grab the options we want to use.
@@ -114,7 +114,7 @@ argon2.getMaxOptions()
         // This hash is what you should store in your database. Treat it as an opaque string.
         console.log(hash);
 
-        // Verifying the hash is simple.
+        // Verifying the hash against your user's password is simple.
         return argon2.verify(plain, hash);
 
     }).then(function(match) {
@@ -125,9 +125,9 @@ argon2.getMaxOptions()
 ```
 
 ## Using Instead of Argon2 Module
-For ease of use Argon2TheMax includes a proxy to the [argon2](https://github.com/ranisalt/node-argon2)
-module since we use it internally. If you already use the excellent Argon2 module
-you can remove your dependency on that module and just use Argon2TheMax.
+For ease of use Argon2TheMax includes a proxy to the  excellent 
+[argon2](https://github.com/ranisalt/node-argon2) module. If you already use 
+Argon2 module you can remove your dependency on that module and just use Argon2TheMax.
 
 Simply change your imports and everything should be good to go:
 
@@ -141,14 +141,14 @@ var argon2 = require("argon2themax");
 
 ## Advanced Usage
 You may not want to recompute the most expensive hash on every server startup.
-If you have a roughly homogenous server farm, or only one server, you should run
-the getMaxOptions and persist the resulting JSON for future usages in your 
-production environment, maybe with a config module or something of the sort.
+You should run getMaxOptions and persist the resulting JSON for future usages 
+in your production environment, maybe with a config module or something of the
+sort.
 
 You can also retrieve the entire list of timings that were recorded as well as 
-implement custom timing and selector strategies to choose a timing, and adjust 
-the salt and plain password used for testing. There aren't examples for that yet,
-though the interfaces are exposed.
+implement custom timing and selector strategies to choose a timing. You can even
+adjust the salt and plain password used for testing. There aren't examples for 
+that yet, though the interfaces are exposed.
 
 ## Future
 Let me know over on the (issues)[https://github.com/jdconley/argon2themax/issues] if you have any issues!
