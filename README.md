@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jdconley/argon2themax.svg?branch=master)](https://travis-ci.org/jdconley/argon2themax)
+
 # argon2themax
 An easy to use Node.JS password hashing library with one goal:
 Increase password security by hashing passwords with the most costly Argon2 
