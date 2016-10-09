@@ -13,4 +13,4 @@ before_install:
 addons:
     apt:
         packages:
-            - g++-6
+            - g++
