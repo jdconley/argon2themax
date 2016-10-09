@@ -4,16 +4,16 @@ Increase password security by hashing passwords with the most costly Argon2
 hash possible.
 
 [Argon2](https://github.com/P-H-C/phc-winner-argon2) is designed to
-hash in parallel on high CPU count x86 systems utilizing 4GB of memory
+hash in parallel on high CPU count x86 systems utilizing up to 4GB of RAM
 in order to make the resulting hashes exceedingly difficult to crack
 with GPUs or ASIC processors.
 
 It allows you to adjust parallelism, apply a time cost, as well as a
-memory cost. But, deciding how to set those parameters can be annoying.
+memory cost. But, deciding how to set those parameters can be complicated.
 The defaults are known to be very secure today. However, with this
 library you can fully take advantage of whatever hardware you are hashing
 on. Why would you use the defaults when you can apply 10x or 100x the
-work to your hash and maintain a good user experience?
+cost to your hash and maintain a good user experience?
 
 ## Why?
 How do you decide on the trade off of security vs user experience?
@@ -43,18 +43,17 @@ npm install --save argon2themax
 ```
 
 ## Typical Usage
-You should use Argon2TheMax at startup time of your service that is hashing
-passwords. It should also be ran when your system is otherwise idle. It is
-very CPU and memory intensive and may temporarily use up to 4GB RAM if it 
-is available.
+You should use Argon2TheMax on your service instances that are responsible for hashing
+passwords. To get the most accurate measurements, you should run the `getMaxOptions()` 
+function for the first time while your system is idle. It is very CPU and memory 
+intensive and may temporarily use up to 4GB RAM if it is available.
 
-In its simplest usage you just speciy the max time (in milliseconds)
-that you want to spend hashing things. It will take a while, trying various 
-Argon2 options and spit back an option class that takes as close to your
-specified max time, without going over. This allows you to decide how much 
-time you want to devote to hashing and verifying passwords. Choose the biggest
-number that won't upset your users. 250ms is reasonable, but up to one
-second might even be tolerable in high security scenarios.
+Calculating the optimal hash options will take a while, as argon2themax tries various 
+Argon2 options and spits back an option class that will let you hash passwords
+in close to your specified max time, without going over. This allows you to 
+decide how much time you want to devote to hashing and verifying passwords. 
+Choose the biggest number that won't upset your users. 100ms (the default) is reasonable, 
+but up to one second might even be tolerable in high security scenarios.
 
 ```ts
 // TypeScript / ES7
@@ -62,8 +61,8 @@ import * as argon2 from "argon2themax";
 const plain = "password";
 
 // Grab the options we want to use.
-// These default options will take close to, but not more than, 250ms to compute a hash.
-// The first run of getMaxOptions() takes a while (~15s on my laptop) so you should 
+// These default options will take close to, but not more than, 100ms to compute a hash.
+// The first run of getMaxOptions() takes a while (~5s on my laptop) so you should 
 // call it at startup, not when the first password hash request comes in.
 // Subsequent calls use a cache.
 const options = await argon2.getMaxOptions();
@@ -88,8 +87,8 @@ console.log(match);
 var argon2 = require("argon2themax");
 
 // Grab the options we want to use.
-// These options will take close to, but not more than, 250ms to compute a hash.
-// The first run of getMaxOptions() takes a while (~15s on my laptop) so you should 
+// These options will take close to, but not more than, 100ms to compute a hash.
+// The first run of getMaxOptions() takes a while (~5s on my laptop) so you should 
 // call it at startup, not when the first password hash request comes in.
 // Subsequent calls use a cache.
 var maxOpts;
