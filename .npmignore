@@ -1,3 +1,4 @@
+.travis.yml
 .vscode
 src
 test
