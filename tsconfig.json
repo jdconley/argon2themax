@@ -2,17 +2,9 @@
     "compilerOptions": {
         "target": "es6",
         "module": "commonjs",
-        "moduleResolution": "node",
         "sourceMap": false,
         "rootDir": ".",
-        "outDir": "dist",
-        "baseUrl": ".",
-        "paths": {
-            "*": [
-                "*",
-                "src/custom-typings/*"
-            ]
-        }
+        "outDir": "dist"
     },
     "include": [
         "src/**/*",

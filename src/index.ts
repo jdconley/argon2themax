@@ -2,13 +2,41 @@
 
 /// <reference types="node" />
 
-import * as argon2 from "argon2";
 import * as os from "os";
 import * as _ from "lodash";
 
+// Begin Argon2 cloned interface for ease of use
+export interface Options {
+    hashLength?: number;
+    timeCost?: number;
+    memoryCost?: number;
+    parallelism?: number;
+    argon2d?: boolean;
+}
+
+export interface NumericLimit {
+    max: number;
+    min: number;
+}
+
+export interface OptionLimits {
+    hashLength: NumericLimit;
+    memoryCost: NumericLimit;
+    timeCost: NumericLimit;
+    parallelism: NumericLimit;
+}
+
+const argon2lib: any = require("argon2");
+export const defaults = argon2lib.defaults;
+export const limits = argon2lib.limits;
+export const hash = argon2lib.hash;
+export const generateSalt = argon2lib.generateSalt;
+export const verify = argon2lib.verify;
+// End Argon2 cloned interface for ease of use
+
 export namespace Measurement {
     export interface Timing {
-        options: argon2.Options;
+        options: Options;
         computeTimeMs: number;
     }
 
@@ -33,7 +61,7 @@ export namespace Measurement {
         strategy: TimingStrategy;
         accumulatedTimeMs: number;
         timingOptions: TimingOptions;
-        startingOptions: argon2.Options;
+        startingOptions: Options;
         data: any;
         pendingResult: TimingResult;
     }
@@ -42,7 +70,7 @@ export namespace Measurement {
         name: string;
 
         async run(options: TimingOptions): Promise<TimingResult> {
-            let opts = _.clone(argon2.defaults);
+            let opts = _.clone(defaults);
             opts.argon2d = options.argon2d;
 
             const context: TimingContext = {
@@ -65,14 +93,14 @@ export namespace Measurement {
 
             // Warm up so testing is a tad more accurate
             for (let i = 0; i < 3; i++) {
-                await argon2.hash(options.plain, salt, opts);
+                await hash(options.plain, salt, opts);
             }
 
             let lastTiming: Timing;
 
             do {
                 const startHrtime = process.hrtime();
-                await argon2.hash(options.plain, salt, opts);
+                await hash(options.plain, salt, opts);
                 const elapsedHrtime = process.hrtime(startHrtime);
 
                 const msElapsed = elapsedHrtime[0] * 1e3 + elapsedHrtime[1] / 1e6;
@@ -101,14 +129,14 @@ export namespace Measurement {
         }
 
         abstract onBeforeStart(context: TimingContext): void;
-        abstract applyNextOptions(context: TimingContext, lastTiming: Timing, options: argon2.Options): boolean;
+        abstract applyNextOptions(context: TimingContext, lastTiming: Timing, options: Options): boolean;
 
         isDone(context: TimingContext, lastTiming: Timing): boolean {
             return lastTiming.computeTimeMs >= context.timingOptions.maxTimeMs;
         }
 
         generateSalt(context: TimingContext): Promise<Buffer> {
-            return argon2.generateSalt(context.timingOptions.saltLength);
+            return generateSalt(context.timingOptions.saltLength);
         }
     }
 
@@ -118,19 +146,19 @@ export namespace Measurement {
         onBeforeStart(context: TimingContext): void {
             context.startingOptions.parallelism =
                 context.data.parallelism = Math.max(
-                    Math.min(os.cpus().length * 2, argon2.limits.parallelism.max),
-                    argon2.limits.parallelism.min);
+                    Math.min(os.cpus().length * 2, limits.parallelism.max),
+                    limits.parallelism.min);
             context.data.memoryCostMax = Math.min(
                 Math.floor(Math.log2(os.totalmem() / 1024)),
-                argon2.limits.memoryCost.max);
+                limits.memoryCost.max);
         }
 
-        applyNextOptions(context: TimingContext, lastTiming: Timing, options: argon2.Options): boolean {
+        applyNextOptions(context: TimingContext, lastTiming: Timing, options: Options): boolean {
             // Prefer adding more memory, then add more time
             if (options.memoryCost < context.data.memoryCostMax) {
                 options.memoryCost++;
-            } else if (options.timeCost < argon2.limits.timeCost.max) {
-                options.memoryCost = argon2.defaults.memoryCost;
+            } else if (options.timeCost < limits.timeCost.max) {
+                options.memoryCost = defaults.memoryCost;
                 options.timeCost++;
             } else {
                 // Hit both the memory and time limits -- Is this a supercomputer?
@@ -147,16 +175,16 @@ export namespace Measurement {
         onBeforeStart(context: TimingContext): void {
             context.startingOptions.parallelism =
                 context.data.parallelism = Math.max(
-                    Math.min(os.cpus().length * 2, argon2.limits.parallelism.max),
-                    argon2.limits.parallelism.min);
+                    Math.min(os.cpus().length * 2, limits.parallelism.max),
+                    limits.parallelism.min);
             context.data.memoryCostMax = Math.min(
                 Math.floor(Math.log2(os.totalmem() / 1024)),
-                argon2.limits.memoryCost.max);
+                limits.memoryCost.max);
             context.data.isDone = false;
             context.data.lastOvershot = false;
         }
 
-        applyNextOptions(context: TimingContext, lastTiming: Timing, options: argon2.Options): boolean {
+        applyNextOptions(context: TimingContext, lastTiming: Timing, options: Options): boolean {
             // Find every timeCost at a every memory cost that satisfies the timing threshold
             // Add more time until the timing threshold is reached.
             // Then go back to default timeCost and add memory.
@@ -169,7 +197,7 @@ export namespace Measurement {
                 }
 
                 // Increase memory and reduce timeCost to default to try next memory option.
-                if (options.memoryCost < argon2.limits.memoryCost.max) {
+                if (options.memoryCost < limits.memoryCost.max) {
                     options.timeCost = context.startingOptions.timeCost;
                     options.memoryCost++;
                     context.data.lastOvershot = true;
@@ -179,7 +207,7 @@ export namespace Measurement {
             } else {
                 context.data.lastOvershot = false;
 
-                if (options.timeCost < argon2.limits.timeCost.max) {
+                if (options.timeCost < limits.timeCost.max) {
                     options.timeCost++;
                 } else { // Wow, really shouldn't hit max timeCost ever.
                     return !(context.data.isDone = true);
@@ -339,7 +367,7 @@ import TimingStrategy = Measurement.TimingStrategy;
 import SelectionStrategyType = Selection.SelectionStrategyType;
 import SelectionStrategy = Selection.SelectionStrategy;
 
-const optionsCache: { [key: string]: argon2.Options; } = { };
+const optionsCache: { [key: string]: Options; } = { };
 function optionsCacheKey(maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
         timingStrategy: string,
         selectionStrategy: string): string {
@@ -350,7 +378,7 @@ export async function getMaxOptionsWithStrategies(
         maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
         timingStrategy: Measurement.TimingStrategy,
         selectionStrategy: SelectionStrategy
-    ): Promise<argon2.Options> {
+    ): Promise<Options> {
 
     const cacheKey = optionsCacheKey(maxMs, timingStrategy.name, selectionStrategy.name);
     let options = optionsCache[cacheKey];
@@ -371,7 +399,7 @@ export async function getMaxOptions(
         maxMs: number = Measurement.defaultTimingOptions.maxTimeMs,
         timingStrategy: TimingStrategyType = TimingStrategyType.ClosestMatch,
         selectionStrategy: SelectionStrategyType = SelectionStrategyType.MaxCost
-    ): Promise<argon2.Options> {
+    ): Promise<Options> {
 
     return getMaxOptionsWithStrategies(
         maxMs,
@@ -379,9 +407,3 @@ export async function getMaxOptions(
         Selection.getSelectionStrategy(selectionStrategy)
     );
 }
-
-export const defaults = argon2.defaults;
-export const limits = argon2.limits;
-export const hash = argon2.hash;
-export const generateSalt = argon2.generateSalt;
-export const verify = argon2.verify;
