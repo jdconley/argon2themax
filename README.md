@@ -125,8 +125,8 @@ argon2.getMaxOptions()
 ```
 
 ## Using Instead of Argon2 Module
-For ease of use Argon2TheMax includes a proxy to the  excellent 
-[argon2](https://github.com/ranisalt/node-argon2) module. If you already use 
+For ease of use Argon2TheMax includes a proxy to the excellent 
+[argon2](https://github.com/ranisalt/node-argon2) module. If you already use the
 Argon2 module you can remove your dependency on that module and just use Argon2TheMax.
 
 Simply change your imports and everything should be good to go:
