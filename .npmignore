@@ -1,9 +1,11 @@
+.babelrc
 .travis.yml
 .vscode
 src
 test
 dist/**/*.map
 dist/test
+dist/lib
 tsconfig.json
 tslint.json
 *.tgz
