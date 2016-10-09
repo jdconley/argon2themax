@@ -1,5 +1,5 @@
 # argon2themax
-An easy to use Node.JS library with one goal:
+An easy to use Node.JS password hashing library with one goal:
 Increase password security by hashing passwords with the most costly Argon2 
 hash possible.
 
@@ -8,7 +8,7 @@ hash in parallel on high CPU count x86 systems utilizing up to 4GB of RAM
 in order to make the resulting hashes exceedingly difficult to crack
 with GPUs or ASIC processors.
 
-It allows you to adjust parallelism, apply a time cost, as well as a
+It allows you to adjust parallelism, and apply a time cost as well as a
 memory cost. But, deciding how to set those parameters can be complicated.
 The defaults are known to be very secure today. However, with this
 library you can fully take advantage of whatever hardware you are hashing
@@ -16,15 +16,16 @@ on. Why would you use the defaults when you can apply 10x or 100x the
 cost to your hash and maintain a good user experience?
 
 ## Why?
-How do you decide on the trade off of security vs user experience?
+How do you decide on the trade off of security vs user experience when it
+comes to deciding on the time it takes to hash your users' passwords?
 I'm guessing you don't think about this much and probably do whatever
 your password hashing library does by default.
 
 We (software engineers) should all be hashing passwords with the highest
 levels of security possible while still maintaining a great user
-experience. We owe it to our users.
+experience. We owe it to our users. And our liability insurance.
 
-Do you run massively parallel, high memory systems dedicated to hashing
+Do you run massively parallel, high memory, systems dedicated to hashing
 passwords? No? Attackers that crack passwords sure do. You might as well
 protect your passwords as well as you can.
 
@@ -49,11 +50,12 @@ function for the first time while your system is idle. It is very CPU and memory
 intensive and may temporarily use up to 4GB RAM if it is available.
 
 Calculating the optimal hash options will take a while, as argon2themax tries various 
-Argon2 options and spits back an option class that will let you hash passwords
-in close to your specified max time, without going over. This allows you to 
+Argon2 options and spits back an Option object that will let you hash passwords
+in using close to your specified max clock time, without going over. This allows you to 
 decide how much time you want to devote to hashing and verifying passwords. 
 Choose the biggest number that won't upset your users. 100ms (the default) is reasonable, 
-but up to one second might even be tolerable in high security scenarios.
+and much more secure than the default options on most systems, but up to one second
+might even be tolerable in high security scenarios.
 
 ```ts
 // TypeScript / ES7
