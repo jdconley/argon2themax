@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jdconley/argon2themax.svg?branch=master)](https://travis-ci.org/jdconley/argon2themax)
+[![Build Status](https://travis-ci.org/jdconley/argon2themax.svg?branch=master)](https://travis-ci.org/jdconley/argon2themax) [![Build Status](https://travis-ci.org/jdconley/argon2themax.svg?branch=1.0.0)](https://travis-ci.org/jdconley/argon2themax)
 
 # argon2themax
 An easy to use Node.JS password hashing library with one goal:
