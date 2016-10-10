@@ -7,8 +7,8 @@ hash possible.
 
 [Argon2](https://github.com/P-H-C/phc-winner-argon2) is designed to
 hash in parallel on high CPU count x86 systems utilizing up to 4GB of RAM
-in order to make the resulting hashes exceedingly difficult to crack
-with GPUs or ASIC processors.
+in order to make the resulting hashes difficult to crack with GPUs or ASIC
+processors.
 
 It allows you to adjust parallelism, and apply a time cost as well as a
 memory cost. But, deciding how to set those parameters can be complicated.
@@ -153,4 +153,5 @@ adjust the salt and plain password used for testing. There aren't examples for
 that yet, though the interfaces are exposed.
 
 ## Future
-Let me know over on the (issues)[https://github.com/jdconley/argon2themax/issues] if you have any issues!
+Let me know over on the [issues](https://github.com/jdconley/argon2themax/issues)
+if you have any issues/suggestions!
