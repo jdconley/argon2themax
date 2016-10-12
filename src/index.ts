@@ -256,10 +256,12 @@ export namespace Measurement {
             plain: "this is a super cool password",
             saltLength: 16,
             statusCallback: t => {
-                console.log(`Hashing took ${t.computeTimeMs}ms.
-                    Parallelism: ${t.options.parallelism}.
-                    MemoryCost: ${t.options.memoryCost} (${Math.pow(2, t.options.memoryCost) / 1024}MB).
-                    TimeCost: ${t.options.timeCost}.`);
+                const ms = `Hashing took ${t.computeTimeMs}ms.`;
+                const pc = `Parallelism: ${t.options.parallelism}.`;
+                const mc = `MemoryCost: ${t.options.memoryCost} (${Math.pow(2, t.options.memoryCost) / 1024}MB).`;
+                const tc = `TimeCost: ${t.options.timeCost}.`;
+
+                console.log(`${ms} ${pc} ${mc} ${tc}`);
 
                 return true;
             }
