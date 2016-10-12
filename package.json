@@ -1,6 +1,6 @@
 {
   "name": "argon2themax",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hash passwords with the most costly Argon2 hash possible",
   "repository": {
     "type": "git",
