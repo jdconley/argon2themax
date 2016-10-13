@@ -1,6 +1,7 @@
 import * as mocha from "mocha";
 import * as chai from "chai";
 import * as argon2 from "../src/index";
+import * as _ from "lodash";
 
 describe("Argon2TheMax", () => {
     it("can turn it to 11 hundred", async function (): Promise<any> {
@@ -27,14 +28,22 @@ describe("Argon2TheMax", () => {
         chai.assert.isNotNull(selector.select(100));
         chai.assert.isNotNull(selector.select(100));
 
-        chai.assert.throw(() => selector.select(0), "No timings found with less than 0ms compute time.");
+        const timeSortedTimings = _.sortBy(result.timings, "computeTimeMs");
+        chai.assert.strictEqual(selector.select(0), _.head(timeSortedTimings),
+            "The fastest timing should be returned when the requested time is too low.");
+
+        const costSortedTimings = _.orderBy(result.timings, ["hashCost", "computeTimeMs"], ["asc", "asc"]);
+        chai.assert.strictEqual(selector.select(1000000), _.last(costSortedTimings),
+            "The highest cost timing should be returned when the requested time is too high.");
 
         const fastest = selector.fastest();
         chai.assert.isNotNull(fastest);
+        chai.assert.strictEqual(fastest, _.head(timeSortedTimings), "The fastest() wasn't the fastest");
         console.log(`Fastest: ${JSON.stringify(fastest)}`);
 
         const slowest = selector.slowest();
         chai.assert.isNotNull(slowest);
+        chai.assert.strictEqual(slowest, _.last(timeSortedTimings), "The slowest() wasn't the slowest");
         console.log(`Slowest: ${JSON.stringify(slowest)}`);
 
         chai.assert.notDeepEqual(fastest, slowest, "The fastest and slowest options should be different, or something is very wrong.");

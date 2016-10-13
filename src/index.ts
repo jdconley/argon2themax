@@ -49,6 +49,7 @@ export namespace Measurement {
     export interface Timing {
         options: Options;
         computeTimeMs: number;
+        hashCost: number;
     }
 
     export interface TimingResult {
@@ -119,7 +120,8 @@ export namespace Measurement {
 
                 lastTiming = {
                     computeTimeMs: msElapsed,
-                    options: _.clone(opts)
+                    options: _.clone(opts),
+                    hashCost: opts.memoryCost * opts.parallelism * opts.timeCost
                 };
 
                 context.pendingResult.timings.push(lastTiming);
@@ -256,12 +258,13 @@ export namespace Measurement {
             plain: "this is a super cool password",
             saltLength: 16,
             statusCallback: t => {
-                const ms = `Hashing took ${t.computeTimeMs}ms.`;
-                const pc = `Parallelism: ${t.options.parallelism}.`;
-                const mc = `MemoryCost: ${t.options.memoryCost} (${Math.pow(2, t.options.memoryCost) / 1024}MB).`;
-                const tc = `TimeCost: ${t.options.timeCost}.`;
+                const ms = `Hashed in ${t.computeTimeMs}ms.`;
+                const hc = `Cost: ${t.hashCost}.`;
+                const pc = `P: ${t.options.parallelism}.`;
+                const mc = `M: ${t.options.memoryCost} (${Math.pow(2, t.options.memoryCost) / 1024}MB).`;
+                const tc = `T: ${t.options.timeCost}.`;
 
-                console.log(`${ms} ${pc} ${mc} ${tc}`);
+                console.log(`${ms} ${hc} ${pc} ${mc} ${tc}`);
 
                 return true;
             }
@@ -323,7 +326,7 @@ export namespace Selection {
 
             // No options available...
             if (!timing) {
-                throw new Error(`No timings found with less than ${maxTimeMs}ms compute time.`);
+                return this.fastest();
             }
 
             this.timingsCache[maxTimeMs] = timing;
@@ -345,8 +348,8 @@ export namespace Selection {
 
         getSortedTimings(timings: Timing[]): Timing[] {
             return _.orderBy(timings,
-                ["options.memoryCost", "options.timeCost", "options.parallelism", "computeTimeMs"],
-                ["asc", "asc", "asc", "asc"]);
+                ["hashCost", "computeTimeMs"],
+                ["asc", "asc"]);
         }
     }
 
