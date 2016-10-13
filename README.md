@@ -31,6 +31,9 @@ Do you run massively parallel, high memory, systems dedicated to hashing
 passwords? No? Attackers that crack passwords sure do. You might as well
 protect your passwords as well as you can.
 
+Shameless plug: If you want access to very secure hashes, have a look at 
+the [pwhaas.com](https://www.pwhaas.com) service.
+
 ## Installation
 argon2themax depends on the [argon2](https://github.com/ranisalt/node-argon2) Node module, which
 requires node-gyp to be installed globally. It also requires a modern
@@ -59,7 +62,7 @@ Choose the biggest number that won't upset your users. 100ms (the default) is re
 and much more secure than the default options for Argon2 on most systems, but up to one 
 second might even be tolerable in high security scenarios.
 
-```ts
+```js
 // TypeScript / ES7
 import * as argon2 from "argon2themax";
 const plain = "password";
