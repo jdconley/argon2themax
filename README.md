@@ -49,6 +49,8 @@ npm install --save argon2themax
 ```
 
 ## Typical Usage
+You can find all of these examples in the [test](https://github.com/jdconley/argon2themax/tree/master/test) directory.
+
 You should use argon2themax on your service instances that are responsible for hashing
 passwords. To get the most accurate measurements, you should run the `getMaxOptions()` 
 function for the first time while your system is idle. It is very CPU and memory 
@@ -85,7 +87,7 @@ const hash = await argon2.hash(plain, salt, options);
 console.log(hash);
 
 // Verifying the hash against your user's password is simple.
-const match = await argon2.verify(plain, hash);
+const match = await argon2.verify(hash, plain);
 console.log(match);
 ```
 
@@ -120,7 +122,7 @@ argon2.getMaxOptions()
         console.log(hash);
 
         // Verifying the hash against your user's password is simple.
-        return argon2.verify(plain, hash);
+        return argon2.verify(hash, plain);
 
     }).then(function(match) {
         
@@ -152,8 +154,77 @@ sort.
 
 You can also retrieve the entire list of timings that were recorded as well as 
 implement custom timing and selector strategies to choose a timing. You can even
-adjust the salt and plain password used for testing. There aren't examples for 
-that yet, though the interfaces are exposed.
+adjust the salt and plain password used for testing.
+
+### Generate timings
+The "Measurement" namespace has what you need to generate timings.
+You can implement your own TimingStrategy, or use one of the ones we provide.
+ClosestMatch, the default, is naive but effective. It sets a fixed parallelism to CPU * 2, and tries
+every memory and time cost combination starting at the defaults, until it reaches
+the maxTimeMs ceiling for each memory cost. Once it hits the maxTimeMs ceiling twice,
+it finishes.
+
+```js
+
+import * as argon2 from "argon2themax";
+
+const timingStrategy = argon2.Measurement.getTimingStrategy(argon2.Measurement.TimingStrategyType.ClosestMatch);
+const timingOptions = { 
+        maxTimeMs: 100,
+        argon2d: false,
+        saltLength: 16,
+        plain: "The password you want to use for timings",
+        statusCallback: (t: argon2.Measurement.Timing) => {
+            // This is called whenever a timing is generated
+            // This is the default status callback, a console log with info
+            const ms = `Hashed in ${t.computeTimeMs}ms.`;
+            const hc = `Cost: ${t.hashCost}.`;
+            const pc = `P: ${t.options.parallelism}.`;
+            const mc = `M: ${t.options.memoryCost} (${Math.pow(2, t.options.memoryCost) / 1024}MB).`;
+            const tc = `T: ${t.options.timeCost}.`;
+
+            console.log(`${ms} ${hc} ${pc} ${mc} ${tc}`);
+
+            // You can cancel the measurement process by returning "false" here.
+            return true;
+        }
+    };
+
+// This could take a really long time, depending on your timing strategy and maxTimeMs option
+const result = await argon2.Measurement.generateTimings(
+    timingOptions, timingStrategy);
+
+// Continued in the next section...
+
+```
+
+### Select Timings
+The "Selection" namespace has the interfaces and basic implementations of timing selectors.
+By default we use the `MaxCostSelectionStrategy` which finds the closest matching timing
+that has the highest `hashCost`. The hash cost is determined by: `memoryCost * parallelism * timeCost`. 
+
+```js
+
+// ... Continued from the previous section
+
+const selector = argon2.Selection.getSelectionStrategy(
+    argon2.Selection.SelectionStrategyType.MaxCost);
+
+// Using the "result" from the example above. It is a TimingResult object.
+selector.initialize(result);
+
+// This is a Timing object, which has the result of the timing.
+// It also has the argon2.Options object that can be passed into the hash function.
+const onehundred = selector.select(100);
+
+// Normal hash operations can proceed with the selected options
+const salt = await argon2.generateSalt(32);
+const hash = await argon2.hash("password", salt, onehundred.options);
+const match = await argon2.verify(hash, "password");
+
+console.log(`Is Match?: ${match}`);
+
+```
 
 ## Future
 Let me know over on the [issues](https://github.com/jdconley/argon2themax/issues)
