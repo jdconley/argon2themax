@@ -1,8 +1,9 @@
+# argon2themax
+
 [![Build Status](https://travis-ci.org/jdconley/argon2themax.svg?branch=master)](https://travis-ci.org/jdconley/argon2themax) [![npm version](https://badge.fury.io/js/argon2themax.svg)](https://badge.fury.io/js/argon2themax)
 
-# argon2themax
 An easy to use Node.JS password hashing library with one goal:
-Increase password security by hashing passwords with the most costly Argon2 
+Increase password security by hashing passwords with the most costly Argon2
 hash possible.
 
 [Argon2](https://github.com/P-H-C/phc-winner-argon2) is designed to
@@ -17,7 +18,8 @@ library you can fully take advantage of whatever hardware you are hashing
 on. Why would you use the defaults when you can apply 10x or 100x the
 cost to your hash and maintain a good user experience?
 
-## Why?
+## Why
+
 How do you decide on the trade off of security vs user experience when it
 comes to deciding on the time it takes to hash your users' passwords?
 I'm guessing you don't think about this much and probably do whatever
@@ -31,10 +33,11 @@ Do you run massively parallel, high memory, systems dedicated to hashing
 passwords? No? Attackers that crack passwords sure do. You might as well
 protect your passwords as well as you can.
 
-Shameless plug: If you want access to very secure hashes, have a look at 
+Shameless plug: If you want access to very secure hashes, have a look at
 the [pwhaas.com](https://www.pwhaas.com) service.
 
 ## Installation
+
 argon2themax depends on the [argon2](https://github.com/ranisalt/node-argon2) Node module, which
 requires node-gyp to be installed globally. It also requires a modern
 C++ compiler. Please see the [argon2 ReadMe](https://github.com/ranisalt/node-argon2)
@@ -49,19 +52,20 @@ npm install --save argon2themax
 ```
 
 ## Typical Usage
+
 You can find all of these examples in the [test](https://github.com/jdconley/argon2themax/tree/master/test) directory.
 
 You should use argon2themax on your service instances that are responsible for hashing
-passwords. To get the most accurate measurements, you should run the `getMaxOptions()` 
-function for the first time while your system is idle. It is very CPU and memory 
+passwords. To get the most accurate measurements, you should run the `getMaxOptions()`
+function for the first time while your system is idle. It is very CPU and memory
 intensive and may temporarily use up to 4GB RAM if it is available.
 
-Calculating the optimal hash options will take a while, as argon2themax tries various 
+Calculating the optimal hash options will take a while, as argon2themax tries various
 Argon2 options and spits back an Option object that will let you hash passwords
-using close to your specified max clock time, without going over. This allows you to 
-decide how much time you want to devote to hashing and verifying passwords. 
-Choose the biggest number that won't upset your users. 100ms (the default) is reasonable, 
-and much more secure than the default options for Argon2 on most systems, but up to one 
+using close to your specified max clock time, without going over. This allows you to
+decide how much time you want to devote to hashing and verifying passwords.
+Choose the biggest number that won't upset your users. 100ms (the default) is reasonable,
+and much more secure than the default options for Argon2 on most systems, but up to one
 second might even be tolerable in high security scenarios.
 
 ```js
@@ -71,7 +75,7 @@ const plain = "password";
 
 // Grab the options we want to use.
 // These default options will take close to, but not more than, 100ms to compute a hash.
-// The first run of getMaxOptions() takes a while (~5s on my laptop) so you should 
+// The first run of getMaxOptions() takes a while (~5s on my laptop) so you should
 // call it at startup, not when the first password hash request comes in.
 // Subsequent calls use a cache.
 const options = await argon2.getMaxOptions();
@@ -97,7 +101,7 @@ var argon2 = require("argon2themax");
 
 // Grab the options we want to use.
 // These options will take close to, but not more than, 100ms to compute a hash.
-// The first run of getMaxOptions() takes a while (~5s on my laptop) so you should 
+// The first run of getMaxOptions() takes a while (~5s on my laptop) so you should
 // call it at startup, not when the first password hash request comes in.
 // Subsequent calls use a cache.
 var maxOpts;
@@ -125,14 +129,15 @@ argon2.getMaxOptions()
         return argon2.verify(hash, plain);
 
     }).then(function(match) {
-        
+
         // Does this password match the hash?
         return match;
     });
 ```
 
 ## Using Instead of Argon2 Module
-For ease of use argon2themax includes a proxy to the excellent 
+
+For ease of use argon2themax includes a proxy to the excellent
 [argon2](https://github.com/ranisalt/node-argon2) module. If you already use the
 Argon2 module you can remove your dependency on that module and just use argon2themax.
 
@@ -147,16 +152,18 @@ var argon2 = require("argon2themax");
 ```
 
 ## Advanced Usage
+
 You may not want to recompute the most expensive hash on every server startup.
-You should run getMaxOptions and persist the resulting JSON for future usages 
+You should run getMaxOptions and persist the resulting JSON for future usages
 in your production environment, maybe with a config module or something of the
 sort.
 
-You can also retrieve the entire list of timings that were recorded as well as 
+You can also retrieve the entire list of timings that were recorded as well as
 implement custom timing and selector strategies to choose a timing. You can even
 adjust the salt and plain password used for testing.
 
 ### Generate timings
+
 The "Measurement" namespace has what you need to generate timings.
 You can implement your own TimingStrategy, or use one of the ones we provide.
 ClosestMatch, the default, is naive but effective. It sets a fixed parallelism to CPU * 2, and tries
@@ -169,9 +176,9 @@ it finishes.
 import * as argon2 from "argon2themax";
 
 const timingStrategy = argon2.Measurement.getTimingStrategy(argon2.Measurement.TimingStrategyType.ClosestMatch);
-const timingOptions = { 
+const timingOptions = {
         maxTimeMs: 100,
-        argon2d: false,
+        type: argon2.argon2i,
         saltLength: 16,
         plain: "The password you want to use for timings",
         statusCallback: (t: argon2.Measurement.Timing) => {
@@ -199,9 +206,10 @@ const result = await argon2.Measurement.generateTimings(
 ```
 
 ### Select Timings
+
 The "Selection" namespace has the interfaces and basic implementations of timing selectors.
 By default we use the `MaxCostSelectionStrategy` which finds the closest matching timing
-that has the highest `hashCost`. The hash cost is determined by: `memoryCost * parallelism * timeCost`. 
+that has the highest `hashCost`. The hash cost is determined by: `memoryCost * parallelism * timeCost`.
 
 ```js
 
@@ -227,5 +235,6 @@ console.log(`Is Match?: ${match}`);
 ```
 
 ## Future
+
 Let me know over on the [issues](https://github.com/jdconley/argon2themax/issues)
 if you have any issues/suggestions!

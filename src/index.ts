@@ -6,12 +6,17 @@ import * as os from "os";
 import * as _ from "lodash";
 
 // Begin Argon2 cloned interface for ease of use
+export const argon2d: number = 0;
+export const argon2i: number = 1;
+export const argon2id: number = 2;
+
 export interface Options {
     hashLength?: number;
     timeCost?: number;
     memoryCost?: number;
     parallelism?: number;
-    argon2d?: boolean;
+    type?: number; // argon2d, argon2i, or argon2id
+    raw?: boolean;
 }
 
 export interface NumericLimit {
@@ -58,7 +63,7 @@ export namespace Measurement {
 
     export interface TimingOptions {
         maxTimeMs?: number;
-        argon2d?: boolean;
+        type?: number;
         saltLength?: number;
         plain?: string;
         statusCallback?: (timing: Timing) => boolean;
@@ -83,7 +88,7 @@ export namespace Measurement {
 
         async run(options: TimingOptions): Promise<TimingResult> {
             let opts = _.clone(defaults);
-            opts.argon2d = options.argon2d;
+            opts.type = options.type;
 
             const context: TimingContext = {
                 accumulatedTimeMs: 0,
@@ -201,7 +206,7 @@ export namespace Measurement {
             // Find every timeCost at a every memory cost that satisfies the timing threshold
             // Add more time until the timing threshold is reached.
             // Then go back to default timeCost and add memory.
-            // Repeat until the first attempt at a given memory cost fails or we reached the max memory. 
+            // Repeat until the first attempt at a given memory cost fails or we reached the max memory.
 
             if (lastTiming.computeTimeMs >= context.timingOptions.maxTimeMs) {
                 // Two in a row means we are done.
@@ -253,7 +258,7 @@ export namespace Measurement {
 
     export const defaultTimingStrategy: Measurement.TimingStrategy = new Measurement.ClosestMatchStrategy();
     export const defaultTimingOptions: Measurement.TimingOptions = {
-            argon2d: false,
+            type: argon2i,
             maxTimeMs: 100,
             plain: "this is a super cool password",
             saltLength: 16,

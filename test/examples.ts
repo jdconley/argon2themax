@@ -10,7 +10,7 @@ describe("Can do what the readme says", () => {
 
         // Grab the options we want to use.
         // These default options will take close to, but not more than, 100ms to compute a hash.
-        // The first run of getMaxOptions() takes a while (~5s on my laptop) so you should 
+        // The first run of getMaxOptions() takes a while (~5s on my laptop) so you should
         // call it at startup, not when the first password hash request comes in.
         // Subsequent calls use a cache.
         const options = await argon2.getMaxOptions();
@@ -38,7 +38,7 @@ describe("Can do what the readme says", () => {
         const timingStrategy = argon2.Measurement.getTimingStrategy(argon2.Measurement.TimingStrategyType.ClosestMatch);
         const timingOptions = {
                 maxTimeMs: 100,
-                argon2d: false,
+                type: argon2.argon2i,
                 saltLength: 16,
                 plain: "The password you want to use for timings",
                 statusCallback: (t: argon2.Measurement.Timing) => {
