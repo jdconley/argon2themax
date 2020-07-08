@@ -39,9 +39,18 @@ export const hash:
     (plain: Buffer | string, salt: Buffer, options?: Options) => Promise<string>
     = argon2lib.hash;
 
-export const generateSalt:
-    (length?: number) => Promise<Buffer>
-    = argon2lib.generateSalt;
+// This used to be defined in argon2lib.generateSalt but then being remove
+// https://github.com/ranisalt/node-argon2/commit/72fed64dc752a97613a0a63143b810b35ee69abf#diff-04c6e90faac2675aa89e2176d2eec7d8L24
+export function generateSalt(length?: number): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        crypto.randomBytes(length || 16, (err, salt) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(salt);
+        })
+    })
+};
 
 export const verify:
     (hash: string, plain: Buffer | string) => Promise<boolean>
