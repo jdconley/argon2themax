@@ -39,9 +39,16 @@ export const hash:
     (plain: Buffer | string, salt: Buffer, options?: Options) => Promise<string>
     = argon2lib.hash;
 
-export const generateSalt:
-    (length?: number) => Promise<Buffer>
-    = argon2lib.generateSalt;
+export async function generateSalt(length?: number): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+        crypto.randomBytes(length || 16, (err, salt) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(salt);
+        })
+    })
+};
 
 export const verify:
     (hash: string, plain: Buffer | string) => Promise<boolean>
