@@ -9,3 +9,7 @@ dist/lib
 tsconfig.json
 tslint.json
 *.tgz
+
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
